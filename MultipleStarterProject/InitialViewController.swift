@@ -10,6 +10,11 @@ import UIKit
 
 class InitialViewController: UIViewController {
 
+    @IBOutlet weak var email: UITextField!
+    @IBOutlet weak var password: UITextField!
+    
+    var uid = ""
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -21,15 +26,40 @@ class InitialViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
+    
+    @IBAction func logIn(_ sender: Any) {
+        
+        if self.email.text != "" || self.password.text != ""{
+        }
+        
     }
-    */
+
+    @IBAction func signUp(_ sender: Any) {
+        
+        if self.email.text != "" || self.password.text != ""{
+
+        }
+        
+    }
+    
+    func doneLogIn(){
+        
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        let nextVC = storyboard.instantiateViewController(withIdentifier: "MainNavigationID") as! UINavigationController
+        self.present(nextVC,animated:true,completion:nil)
+        
+    }
+    
+    func doneSignUp(){
+        
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        let nextVC = storyboard.instantiateViewController(withIdentifier: "SignUpViewControllerID")as! SignUpViewController
+        self.present(nextVC,animated:true,completion:nil)
+        
+        
+    }
+    
+    
+    
 
 }
