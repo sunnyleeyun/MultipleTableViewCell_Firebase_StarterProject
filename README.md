@@ -180,6 +180,7 @@ class InitialViewController: UIViewController {
 
 ## SignUpViewController ##
 ```
+
 import UIKit
 import FirebaseDatabase
 import FirebaseStorage
@@ -199,24 +200,23 @@ class SignUpViewController: UIViewController {
     
     // 可以自動產生一組獨一無二的 ID 號碼，方便等一下上傳圖片的命名
     let uniqueString = NSUUID().uuidString
+
     
     
-    @IBAction func confirm(_ sender: Any) {
+    override func viewDidLoad() {
+        super.viewDidLoad()
         
-        if cookName.text != "" && foodName.text != "" && cookTime.text != "" && howCook.text != ""{
-            
-            
-            FIRDatabase.database().reference(withPath: "Meal/\(self.uniqueString)").child("FoodName").setValue(foodName.text!)
-            FIRDatabase.database().reference(withPath: "Meal/\(self.uniqueString)").child("cookTime").setValue(cookTime.text!)
-            FIRDatabase.database().reference(withPath: "Meal/\(self.uniqueString)").child("cookName").setValue(cookName.text!)
-            FIRDatabase.database().reference(withPath: "Meal/\(self.uniqueString)").child("cookhow").setValue(howCook.text!)
-            FIRDatabase.database().reference(withPath: "Meal/\(self.uniqueString)").child("cookPic").setValue(uniqueString)
-
-            done()
-            
-            
+        
+        if let user = FIRAuth.auth()?.currentUser {
+            uid = user.uid
         }
+        
 
+    }
+
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
     }
     
     func done(){
@@ -225,26 +225,26 @@ class SignUpViewController: UIViewController {
         self.present(nextVC,animated:true,completion:nil)
     }
     
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        if let user = FIRAuth.auth()?.currentUser {
-            uid = user.uid
+    @IBAction func confirm(_ sender: Any) {
+        
+        if cookName.text != "" && foodName.text != "" && cookTime.text != "" && howCook.text != ""{
+            
+            FIRDatabase.database().reference(withPath: "Meal/\(self.uniqueString)").child("FoodName").setValue(foodName.text!)
+            FIRDatabase.database().reference(withPath: "Meal/\(self.uniqueString)").child("cookTime").setValue(cookTime.text!)
+            FIRDatabase.database().reference(withPath: "Meal/\(self.uniqueString)").child("cookName").setValue(cookName.text!)
+            FIRDatabase.database().reference(withPath: "Meal/\(self.uniqueString)").child("cookhow").setValue(howCook.text!)
+            FIRDatabase.database().reference(withPath: "Meal/\(self.uniqueString)").child("cookPic").setValue(uniqueString)
+            
+            done()
+        
+        
         }
-
-        
-        
-    }
-
-    
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
     
-
+    
     @IBAction func addImage(_ sender: Any) {
+        
+         
         // 建立一個 UIImagePickerController 的實體
         let imagePickerController = UIImagePickerController()
         
@@ -291,9 +291,13 @@ class SignUpViewController: UIViewController {
         
         // 當使用者按下 uploadBtnAction 時會 present 剛剛建立好的三個 UIAlertAction 動作與
         present(imagePickerAlertController, animated: true, completion: nil)
+        
+ 
 
         
     }
+    
+
     
 }
 
@@ -346,7 +350,7 @@ extension SignUpViewController: UIImagePickerControllerDelegate, UINavigationCon
                             
                             //let databaseRef = FIRDatabase.database().reference(withPath: "User/\(self.uid)/Profile/Verification").child(uniqueString)
                             let databaseRef = FIRDatabase.database().reference(withPath: "Meal/\(self.uniqueString)").child("cookPic")
-
+                            
                             databaseRef.setValue(uploadImageUrl, withCompletionBlock: { (error, dataRef) in
                                 
                                 if error != nil {
@@ -376,12 +380,15 @@ extension SignUpViewController: UIImagePickerControllerDelegate, UINavigationCon
     
 }
 
+
+
 ```
 
 ---------------------------------------
 
 ## MainTableViewController ##
 ```
+
 import UIKit
 import Firebase
 import FirebaseDatabase
@@ -389,26 +396,21 @@ import FirebaseStorage
 
 class MainTableViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
 
+    
     @IBOutlet weak var DishesTableView: UITableView!
+    var uid = ""
     
     var refHandle: UInt!
     var databaseRef: FIRDatabaseReference!
     var storageRef: FIRStorageReference!
     
-    var uid = ""
-    
-    
     var mealList = [Meals]()
-    
-    func done(){
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        let nextVC = storyboard.instantiateViewController(withIdentifier: "DishesViewControllerID") as! DishesViewController
-        self.navigationController?.pushViewController(nextVC, animated: true)
-        
-    }
+
+
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         
         DishesTableView.delegate = self
         DishesTableView.dataSource = self
@@ -417,8 +419,7 @@ class MainTableViewController: UIViewController, UITableViewDataSource, UITableV
             uid = user.uid
         }
         
-       
-        
+
         let rightButtonItem = UIBarButtonItem.init(
             title: "新增",
             style: .done,
@@ -426,14 +427,17 @@ class MainTableViewController: UIViewController, UITableViewDataSource, UITableV
             action: #selector(done)
         )
         self.navigationItem.rightBarButtonItem = rightButtonItem
-        
+      
         
         databaseRef = FIRDatabase.database().reference()
         storageRef = FIRStorage.storage().reference()
         
-
+        
 
         fetchMealsList()
+
+
+    
     
     }
 
@@ -442,9 +446,13 @@ class MainTableViewController: UIViewController, UITableViewDataSource, UITableV
         // Dispose of any resources that can be recreated.
     }
     
+    func done(){
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        let nextVC = storyboard.instantiateViewController(withIdentifier: "DishesViewControllerID") as! DishesViewController
+        self.navigationController?.pushViewController(nextVC, animated: true)
+    }
+    
     func fetchMealsList(){
-        
-
         
         refHandle = databaseRef.child("Meal").observe(.childAdded, with: { (snapshot) in
             
@@ -464,22 +472,19 @@ class MainTableViewController: UIViewController, UITableViewDataSource, UITableV
             
         })
         
-        
     }
-    
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return mealList.count
     }
+
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath) as! DishesTableViewCell
-        
         cell.cookNameMeal.text = mealList[indexPath.row].cookName
         cell.nameMeal.text = mealList[indexPath.row].FoodName
         cell.timeMeal.text = mealList[indexPath.row].cookTime
-
+        
         if let profileImageUrl = mealList[indexPath.row].cookPic{
             let url = URL(string: profileImageUrl)
             URLSession.shared.dataTask(with: url!, completionHandler: { (data, response, error) in
@@ -491,31 +496,21 @@ class MainTableViewController: UIViewController, UITableViewDataSource, UITableV
                 DispatchQueue.main.async {
                     cell.imageMeal.image = UIImage(data: data!)
                 }
-            
+                
             }).resume()
             
         }
         
         cell.cookHowMeal.text = mealList[indexPath.row].cookhow
         
+
         
         return cell
-        
-        
     }
     
-    
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-    }
-    */
 
 }
+
 
 ```
 
@@ -584,46 +579,31 @@ import FirebaseDatabase
 import FirebaseStorage
 
 class DishesViewController: UIViewController {
-    
-    @IBOutlet weak var cookName: UITextField!
 
+    @IBOutlet weak var cookName: UITextField!
+    
     @IBOutlet weak var foodName: UITextField!
     
     @IBOutlet weak var cookTime: UITextField!
     
     @IBOutlet weak var cookHow: UITextView!
     
+    
     var uid = ""
     
     let uniqueString = NSUUID().uuidString
 
     
-    @IBAction func confirm(_ sender: Any) {
-        
-        if cookName.text != "" && foodName.text != "" && cookTime.text != "" && cookHow.text != ""{
-            
-            
-            FIRDatabase.database().reference(withPath: "Meal/\(self.uniqueString)").child("FoodName").setValue(foodName.text!)
-            FIRDatabase.database().reference(withPath: "Meal/\(self.uniqueString)").child("cookTime").setValue(cookTime.text!)
-            FIRDatabase.database().reference(withPath: "Meal/\(self.uniqueString)").child("cookName").setValue(cookName.text!)
-            FIRDatabase.database().reference(withPath: "Meal/\(self.uniqueString)").child("cookhow").setValue(cookHow.text!)
-            FIRDatabase.database().reference(withPath: "Meal/\(self.uniqueString)").child("cookPic").setValue(uniqueString)
-            
-            
-            done()
-        }
-
-    }
-    
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
+    
         if let user = FIRAuth.auth()?.currentUser {
             uid = user.uid
         }
         
-    
+        
     }
 
     override func didReceiveMemoryWarning() {
@@ -635,10 +615,29 @@ class DishesViewController: UIViewController {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let nextVC = storyboard.instantiateViewController(withIdentifier: "MainNavigationID") as! UINavigationController
         self.present(nextVC,animated:true,completion:nil)
-
+        
+    }
+    
+    @IBAction func confirm(_ sender: Any) {
+        
+        if cookName.text != "" && foodName.text != "" && cookTime.text != "" && cookHow.text != ""{
+        
+            
+            FIRDatabase.database().reference(withPath: "Meal/\(self.uniqueString)").child("FoodName").setValue(foodName.text!)
+            FIRDatabase.database().reference(withPath: "Meal/\(self.uniqueString)").child("cookTime").setValue(cookTime.text!)
+            FIRDatabase.database().reference(withPath: "Meal/\(self.uniqueString)").child("cookName").setValue(cookName.text!)
+            FIRDatabase.database().reference(withPath: "Meal/\(self.uniqueString)").child("cookhow").setValue(cookHow.text!)
+            FIRDatabase.database().reference(withPath: "Meal/\(self.uniqueString)").child("cookPic").setValue(uniqueString)
+            
+            
+            done()
+        }
+        
     }
     
     @IBAction func addImage(_ sender: Any) {
+        
+        
         
         // 建立一個 UIImagePickerController 的實體
         let imagePickerController = UIImagePickerController()
@@ -687,19 +686,14 @@ class DishesViewController: UIViewController {
         // 當使用者按下 uploadBtnAction 時會 present 剛剛建立好的三個 UIAlertAction 動作與
         present(imagePickerAlertController, animated: true, completion: nil)
         
+        
+        
+        
     }
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-    }
-    */
+    
 
 }
+
 
 extension DishesViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
@@ -775,11 +769,11 @@ extension DishesViewController: UIImagePickerControllerDelegate, UINavigationCon
         
         
     }
-
-    
-    
+ 
     
 }
+ 
+
 ```
 ---------------------------------------
 
