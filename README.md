@@ -4,7 +4,7 @@
 [id2]: https://github.com/sunnyleeyun/MultipleTableviewCellFirebase/archive/master.zip
 
 
-#### 這是 Starter Project，完整版請 [點此][id2] 下載 ####
+## 這是 Starter Project，若要完整版請 [點此][id2] 下載 ####
 
 
 
