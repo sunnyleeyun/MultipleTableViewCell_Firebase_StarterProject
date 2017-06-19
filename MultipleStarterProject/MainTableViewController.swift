@@ -23,7 +23,12 @@ class MainTableViewController: UIViewController, UITableViewDataSource, UITableV
         DishesTableView.dataSource = self
         
 
-
+        /*
+         if let user = FIRAuth.auth()?.currentUser {
+         uid = user.uid
+         }
+         */
+        
         let rightButtonItem = UIBarButtonItem.init(
             title: "新增",
             style: .done,
